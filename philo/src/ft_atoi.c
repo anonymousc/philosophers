@@ -9,7 +9,7 @@ static int ft_isspace(char c)
 {
 	return((c >= 9 && c <= 13) || c == 32);
 }
-static int ft_isalpha(char c)
+static int ft_isntalpha(char c)
 {
 	return(!(c >= '0' && c <= '9'));
 }
@@ -19,15 +19,15 @@ long ft_atoi(char *str)
 	long long res;
 
 	res = 0;
+	while (str && ft_isspace(*str))
+		str++;
 	while (str[res])
 	{
-		if(ft_isalpha(str[res]))
+		if(ft_isntalpha(str[res]))
 			return (0);
 		res++;
 	}
 	res = 0;
-	while (str && ft_isspace(*str))
-		str++;
 	if(*str == '+')
 		str++;
 	while (*str && ft_isdigit(*str))	

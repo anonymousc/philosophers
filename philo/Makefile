@@ -1,6 +1,6 @@
 NAME = philo
 
-CFLAGS = -Wextra -Wall -Werror -I./lib/ #-g3 -fsanitize=address
+CFLAGS = -Wextra -Wall -Werror -I./lib/ -lpthread #-fsanitize=thread
 
 CC = cc
 
@@ -11,7 +11,7 @@ obj = $(src:%.c=%.o)
 all : $(NAME)
 
 $(NAME) : $(obj) 
-	$(CC) $(CFLAGS) $(obj) -pthread -o $(NAME)
+	$(CC) $(CFLAGS) $(obj) -o $(NAME)
 clean :
 	rm -rf $(obj)
 fclean : clean

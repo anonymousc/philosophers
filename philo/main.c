@@ -3,14 +3,14 @@
 
 bool 	check_death(t_ph *ph)
 {
-	if (get_time_m() - ph->last_time_eat >= ph->tbla->time_to_die)
+	if (get_time_m() - ph->last_time_eat >= ph->table->time_to_die)
 		return true;
 	return false;
 }
 
 void	*monitor(void *data)
 {
-	t_tbla *hh;
+	t_table *hh;
 	int i;
 
 	hh = data;
@@ -22,6 +22,8 @@ void	*monitor(void *data)
 		i = 0;
 		while (!hh->end_of_sim && i < hh->num_of_philos)
 		{
+			if (hh->philos->meals_eaten == hh->num_of_meals)
+				return NULL;
 			if(check_death(&hh->philos[i]) && !hh->end_of_sim)
 			{
 				hh->end_of_sim = check_death(&hh->philos[i]);
@@ -64,46 +66,46 @@ int	ft_handle_parse_error(char **av, int ac)
 	return (philos);
 }
 
-void	ft_sync(t_tbla *tbla)
+void	ft_sync(t_table *table)
 {
-	while (tbla->num_ready_to_sync != tbla->num_of_philos);
+	while (table->num_ready_to_sync != table->num_of_philos);
 } 
 
 void	think(t_ph *philo)
 {
-	if(!philo->tbla->end_of_sim)
+	if(!philo->table->end_of_sim)
 	{
-		printf ("%ld %d is thinking\n", get_time_m() - philo->tbla->start_of_sim ,  philo->id);
-		if(philo->tbla->num_of_philos % 2)
-			ft_uslep(((philo->tbla->time_to_eat * 2) - philo->tbla->time_to_sleep));
-		else
-			return ;
+		printf ("%ld %d is thinking\n", get_time_m() - philo->table->start_of_sim ,  philo->id);
+		ft_uslep(60);
 	}
 }
 
 void	eat(t_ph *philo, atomic_long *last_meal)
 {
 	pthread_mutex_lock(&philo->fork_1->fork);
-	if(!philo->tbla->end_of_sim)
-		printf ("%ld %d has taken a fork\n", get_time_m() - philo->tbla->start_of_sim ,  philo->id);
+	if(!philo->table->end_of_sim)
+		printf ("%ld %d has taken a fork\n", get_time_m() - philo->table->start_of_sim ,  philo->id);
 	pthread_mutex_lock(&philo->fork_2->fork);
-	if(!philo->tbla->end_of_sim)
-		printf ("%ld %d has taken a fork\n", get_time_m() - philo->tbla->start_of_sim,  philo->id);
+	if(!philo->table->end_of_sim)
+		printf ("%ld %d has taken a fork\n", get_time_m() - philo->table->start_of_sim,  philo->id);
 	*last_meal = get_time_m();
-	if(!philo->tbla->end_of_sim)
-		printf ("%ld %d is eating\n", get_time_m() - philo->tbla->start_of_sim,  philo->id);
+	if(!philo->table->end_of_sim)
+		printf ("%ld %d is eating\n", get_time_m() - philo->table->start_of_sim,  philo->id);
 	philo->meals_eaten++;
-	if(!philo->tbla->end_of_sim)
-		ft_uslep(philo->tbla->time_to_eat);
+	if(!philo->table->end_of_sim)
+	{
+		while (get_time_m() - philo->table->start_of_sim <= philo->table->time_to_eat)
+			ft_uslep(60);
+	}
 	pthread_mutex_unlock(&philo->fork_2->fork);
 	pthread_mutex_unlock(&philo->fork_1->fork);
 }
 void sleep_p(t_ph *philo)
 {
-	if(!philo->tbla->end_of_sim)
+	if(!philo->table->end_of_sim)
 	{
-		printf ("%ld %d is sleeping\n",  get_time_m() - philo->tbla->start_of_sim,  philo->id);
-		ft_uslep(philo->tbla->time_to_sleep);
+		printf ("%ld %d is sleeping\n",  get_time_m() - philo->table->start_of_sim,  philo->id);
+		ft_uslep(philo->table->time_to_sleep);
 	}
 }
 void *dinner(void *data)
@@ -111,17 +113,15 @@ void *dinner(void *data)
 	t_ph *philo;
 
 	philo = (t_ph*)data;
-	philo->tbla->start_of_sim = get_time_m();
-	while (!philo->tbla->ready);
+	philo->table->start_of_sim = get_time_m();
 	philo->meals_eaten = 0;
-	philo->ready = true;
-	philo->tbla->num_ready_to_sync++;
+	philo->table->num_ready_to_sync++;
 	while (1)
 	{
-		if(philo->tbla->end_of_sim == true)
+		if(philo->table->end_of_sim == true)
 			return (NULL);
 		eat(philo, &philo->last_time_eat);
-		if(philo->meals_eaten == philo->tbla->num_of_meals)
+		if(philo->meals_eaten == philo->table->num_of_meals)
 			return (NULL);
 		sleep_p(philo);
 		think(philo);
@@ -135,95 +135,94 @@ void *single_threaded(void *data)
 	while (1)
 	{
 		pthread_mutex_lock(&philo->fork_1->fork);
-		printf ("%ld %d has taken a fork\n", get_time_m() - philo->tbla->start_of_sim ,  1);
+		printf ("%ld %d has taken a fork\n", get_time_m() - philo->table->start_of_sim ,  1);
 		pthread_mutex_unlock(&philo->fork_1->fork);
-		ft_uslep(philo->tbla->time_to_die);
-		printf("%ld %d died\n", get_time_m() - philo->tbla->start_of_sim ,philo->tbla->philos[0].id);
+		ft_uslep(philo->table->time_to_die);
+		printf("%ld %d died\n", get_time_m() - philo->table->start_of_sim ,philo->table->philos[0].id);
 		return NULL;
 	}
 }
-int sim_dinner(t_tbla *tbla)
+int sim_dinner(t_table *table)
 {
 	int i;
 	i = 0;
-	if(tbla->num_of_philos == 1)
+	if(table->num_of_philos == 1)
 	{
-		tbla->start_of_sim = get_time_m();
-		pthread_create(&tbla->philos[0].ph_id, NULL, single_threaded , tbla->philos);
-		pthread_join(tbla->philos[0].ph_id, NULL);
+		table->start_of_sim = get_time_m();
+		pthread_create(&table->philos[0].ph_id, NULL, single_threaded , table->philos);
+		pthread_join(table->philos[0].ph_id, NULL);
 	}
 	else 
 	{
-		while (i < tbla->num_of_philos)
+		while (i < table->num_of_philos)
 		{
-			pthread_create(&tbla->philos[i].ph_id, NULL, dinner , tbla->philos + i);
+			pthread_create(&table->philos[i].ph_id, NULL, dinner , table->philos + i);
 			i++;
 		}
-		pthread_create(&tbla->monitor, NULL, monitor , tbla);
-		tbla->ready = true;
+		pthread_create(&table->monitor, NULL, monitor , table);
 		i = 0;
-		while (i < tbla->num_of_philos)
+		while (i < table->num_of_philos)
 		{
-			pthread_join(tbla->philos[i].ph_id, NULL);
+			pthread_join(table->philos[i].ph_id, NULL);
 			i++;
 		}
-		pthread_join(tbla->monitor, NULL);
+		pthread_join(table->monitor, NULL);
 	}
 	return 0;
 }
 
-void take_forks(t_tbla *tbla, int pos)
+void take_forks(t_table *table, int pos)
 {
-	tbla->philos[pos].fork_1 = &tbla->forks[pos];
-	tbla->philos[pos].fork_2 = &tbla->forks[(pos + 1) % tbla->num_of_philos];
+	table->philos[pos].fork_1 = &table->forks[pos];
+	table->philos[pos].fork_2 = &table->forks[(pos + 1) % table->num_of_philos];
 
-	if (tbla->philos[pos].id % 2 == 0)
+	if (table->philos[pos].id % 2 == 0)
 	{
-		tbla->philos[pos].fork_1 = &tbla->forks[(pos + 1) % tbla->num_of_philos];
-		tbla->philos[pos].fork_2 = &tbla->forks[pos];
+		table->philos[pos].fork_1 = &table->forks[(pos + 1) % table->num_of_philos];
+		table->philos[pos].fork_2 = &table->forks[pos];
 	}
 }
 
-void init_table(t_tbla *tbla, char **av)
+void init_table(t_table *table, char **av)
 {
-	tbla->num_of_philos = ft_atoi(av[1]);
-	tbla->time_to_die = ft_atoi(av[2]);
-	tbla->time_to_eat = ft_atoi(av[3]);
-	tbla->time_to_sleep = ft_atoi(av[4]);
-	tbla->end_of_sim = false;
-	tbla->ready = false;
-	if (av[5])
-		tbla->num_of_meals = ft_atoi(av[5]);
-	tbla->num_ready_to_sync = 0;
-	tbla->philos = malloc(sizeof(t_ph) * tbla->num_of_philos);
-	tbla->forks = malloc(sizeof(t_fork) * tbla->num_of_philos);
+	int i;
 
-	int i = 0;
-	while (i < tbla->num_of_philos)
+	i = 0;
+	table->num_of_philos = ft_atoi(av[1]);
+	table->time_to_die = ft_atoi(av[2]);
+	table->time_to_eat = ft_atoi(av[3]);
+	table->time_to_sleep = ft_atoi(av[4]);
+	table->end_of_sim = false;
+	if (av[5])
+		table->num_of_meals = ft_atoi(av[5]);
+	table->num_ready_to_sync = 0;
+	table->philos = malloc(sizeof(t_ph) * table->num_of_philos);
+	table->forks = malloc(sizeof(t_fork) * table->num_of_philos);
+
+	while (i < table->num_of_philos)
 	{
-		pthread_mutex_init(&tbla->forks[i].fork, NULL);
-		tbla->forks[i].id = i;
+		pthread_mutex_init(&table->forks[i].fork, NULL);
+		table->forks[i].id = i;
 		i++;
 	}
-	 i = 0;
-	while (i < tbla->num_of_philos)
+	i = 0;
+	while (i < table->num_of_philos)
 	{
-		tbla->philos[i].id = i + 1;
-		tbla->philos[i].tbla = tbla;
-		tbla->philos[i].is_full = false;
-		tbla->philos[i].ready = false;
-		take_forks(tbla, i);
+		table->philos[i].id = i + 1;
+		table->philos[i].table = table;
+		table->philos[i].is_full = false;
+		take_forks(table, i);
 		i++;
  	}
 }
 
 int	main(int ac, char **av)
 {
-	t_tbla *tbla =  malloc (sizeof(t_tbla));
+	t_table *table =  malloc (sizeof(t_table));
 
 	if (ft_handle_parse_error(av, ac) == -1)
 		return (1);
-	init_table(tbla, av);
-	sim_dinner(tbla);
-	// clean(tbla);
+	init_table(table, av);
+	sim_dinner(table);
+	// clean(table);
 } 
