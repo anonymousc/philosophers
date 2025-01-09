@@ -1,4 +1,5 @@
 #include "philo.h"
+#include <unistd.h>
 
 static int ft_isdigit(char c)
 {
@@ -35,10 +36,10 @@ long ft_atoi(char *str)
 			return (write(2, "trying Some forbidden integer range\n", 37), 0);
 		res = (res * 10) + (*str)  - '0';
 		str++;
-	}
+	}	
 	return (res);
 }
-int get_time_m ()
+long get_time_m ()
 {
 	struct timeval tv;
 
@@ -50,15 +51,14 @@ int get_time_m ()
 int get_time_micro ()
 {
 	struct timeval tv;
+
 	gettimeofday(&tv, NULL);
 	return ((tv.tv_sec * 1000000) + (tv.tv_usec)); 
 }
 
 void ft_uslep (size_t time)
 {
-	size_t start = get_time_micro();
-	while (get_time_micro()  - start < time)
-	{	
-		usleep(1000);		
-	}
+	size_t start = get_time_m();
+	while (get_time_m() - start < time)
+		usleep(500);		
 }

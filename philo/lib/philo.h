@@ -16,7 +16,7 @@ typedef struct s_forks
 {
 	int id;
 	pthread_mutex_t fork;
-}t_fork;
+}	t_fork;
 
 typedef struct s_ph
 {
@@ -26,29 +26,31 @@ typedef struct s_ph
 	t_fork  *fork_1;
 	t_fork *fork_2;
 	atomic_int meals_eaten;
-	atomic_int last_time_eat;
+	atomic_long last_time_eat;
 	atomic_bool is_full;
 	atomic_int	id;
 }				t_ph;
 
 typedef struct s_tbla
 {
+	pthread_t monitor;
 	atomic_int num_ready_to_sync;
-	atomic_int start_of_sim;
+	atomic_long start_of_sim;
+	atomic_bool end_of_sim;
 	atomic_int num_of_philos;
-	atomic_int time_to_die;
+	atomic_long time_to_die;
 	atomic_int time_to_eat;
 	atomic_int time_to_sleep;
+	atomic_bool ready;
 	atomic_int num_of_meals;
 	t_ph *philos;
 	t_fork *forks;
-	atomic_int to_exit;
-	atomic_int to_die;
+	atomic_bool to_die;
 }				t_tbla;
 
 long ft_atoi(char *str);
-int get_time_m ();
-int get_time_micro ();
-void ft_uslep (size_t time);
+long get_time_m();
+int get_time_micro();
+void ft_uslep(size_t time);
 
 #endif
