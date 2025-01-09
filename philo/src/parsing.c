@@ -6,7 +6,7 @@
 /*   By: aessadik <aessadik@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/09 22:14:19 by aessadik          #+#    #+#             */
-/*   Updated: 2025/01/09 22:19:09 by aessadik         ###   ########.fr       */
+/*   Updated: 2025/01/09 22:23:36 by aessadik         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ static int	input_validation(char **av)
 
 static int	parser(char **av, int ac)
 {
-	if (ac < 4 || ac > 7)
+	if (ac < 5 || ac > 7)
 		return (10);
 	return (input_validation(av));
 }

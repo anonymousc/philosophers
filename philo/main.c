@@ -6,7 +6,7 @@
 /*   By: aessadik <aessadik@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/09 22:13:55 by aessadik          #+#    #+#             */
-/*   Updated: 2025/01/09 22:13:56 by aessadik         ###   ########.fr       */
+/*   Updated: 2025/01/09 22:25:26 by aessadik         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,4 +22,5 @@ int	main(int ac, char **av)
 	init_table(table, av);
 	sim_dinner(table);
 	clean(table);
+	return 0;
 }

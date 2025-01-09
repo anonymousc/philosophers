@@ -6,7 +6,7 @@
 /*   By: aessadik <aessadik@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/09 22:14:22 by aessadik          #+#    #+#             */
-/*   Updated: 2025/01/09 22:16:42 by aessadik         ###   ########.fr       */
+/*   Updated: 2025/01/09 22:29:11 by aessadik         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,8 @@ void	clean(t_table *table)
 {
 	pthread_mutex_destroy(&table->forks->fork);
 	pthread_mutex_destroy(&table->philos->monitor_mutex);
-	free(table);
 	free(table->philos);
 	free(table->forks);
+	free(table);
+	return ;
 }

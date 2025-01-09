@@ -1,6 +1,6 @@
 NAME = philo
 
-CFLAGS = -Wextra -Wall -Werror -I./lib/ -lpthread
+CFLAGS = -Wextra -Wall -Werror -I./lib/ -lpthread -fsanitize=address -g3
 
 CC = cc
 
